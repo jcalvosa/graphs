@@ -1,0 +1,16 @@
+-- Proyecto Graph --
+
+-- Notas generales --
+Descripcion:
+	Usando los ficheros cvs presentes en el directorio data (ciudadesEspanolas.cvs y rutas.csv)
+	localiza el camino mas corto entre dos localidades introducidas como parametros de ejecucion.
+
+Compilacion y ejecucion linux (requiere compilacion con c++11):
+	$ g++ -o main main.cpp -std=c++0x
+	$ ./main
+
+-- Notas de revisiones --
+	Revision 1:
+		a) No admite parametros de ejecucion, se encuentran hardcoded en codigo.
+		b) Localiza la ruta mas corta entre dos localidades.
+
