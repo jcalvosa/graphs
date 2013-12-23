@@ -6,7 +6,7 @@ Descripcion:
 	localiza el camino mas corto entre dos localidades introducidas como parametros de ejecucion.
 
 Compilacion y ejecucion linux (requiere compilacion con c++11):
-	$ g++ -o main main.cpp -std=c++0x
+	$ g++ -o main main.cpp GraphItem.cpp Road.cpp -std=c++0x
 	$ ./main
 
 -- Notas de revisiones --
@@ -18,5 +18,10 @@ Compilacion y ejecucion linux (requiere compilacion con c++11):
 		d) Formato de fichero spanishRoads.cvs
 			columnas separadas por ; (city; city, velocidad maxima)
 		d) Soporte para visitor en grafo para calculo de distancias
+	Branch FicherosPorClase:
+		a) Separacion de clases en ficheros independientes.
+		b) Implementacion con lambas
+		c) Compilacion:
+			g++ -o main main.cpp GraphItem.cpp Road.cpp -std=c++0x
 
 

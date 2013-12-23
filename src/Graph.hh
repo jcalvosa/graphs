@@ -10,10 +10,8 @@
 #include <limits>
 
 
-
 namespace jcs
 {
-
 
 template <typename Item, typename Weight>
 class Graph
