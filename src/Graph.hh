@@ -14,15 +14,22 @@
 namespace jcs
 {
 
-template <typename T>
+
+template <typename Item, typename Weight>
 class Graph
 {
   // graph containers
-  typedef std::pair<const T, float> WeightToNode;
+  typedef std::pair<const Item, const Weight> WeightToNode;
   typedef std::set<WeightToNode> Weights;
-  typedef std::map<const T, Weights> WeigthMatrix;
+  typedef std::map<const Item, Weights> WeigthMatrix;
 
   public:
+    class IWeightCalculator
+    {
+      public:
+        virtual float CalcDistance(const Weight & weight) const = 0;
+    };
+  
     enum Type
     {
       _Directed_,
@@ -33,8 +40,13 @@ class Graph
 
     struct DijkstraEdge
     {
-      const T * _item;
-      float _weigth;
+      DijkstraEdge(const Item & i, const Weight & w) :
+        _item(i),
+        _weigth(w)
+      {}
+        
+      const Item _item;
+      const Weight _weigth;
     };
 
     typedef std::deque<DijkstraEdge> DijkstraPath;
@@ -45,14 +57,14 @@ class Graph
     {
     }
 
-    std::pair<WeigthsIterator, bool> AddVertex(const T & item)
+    std::pair<WeigthsIterator, bool> AddVertex(const Item & item)
     {
       Weights weights;
 
       return _weigthMatrix.insert(std::make_pair(item, weights));
     }
 
-    void AddEdge(const T & source, const T & dest, float _weigth)
+    void AddEdge(const Item & source, const Item & dest, const Weight & _weigth)
     {
       SetEdge(source, dest, _weigth);
 
@@ -62,7 +74,7 @@ class Graph
       }
     }
 
-    float GetWeigth(const T & source, const T & dest) const
+    Weight GetWeigth(const Item & source, const Item & dest) const
     {
       auto item = _weigthMatrix.find(source);
 
@@ -74,13 +86,14 @@ class Graph
         }
       }
 
-      return std::numeric_limits<float>::max();
+      return Weight();
     }
 
-    DijkstraPath Dijkstra(const T & source, const T & dest)
+    DijkstraPath Dijkstra(const Item & source, const Item & dest, 
+                          const IWeightCalculator & validator)
     {
       DijkstraWeights weights;
-      std::set<const T *> openCandidates;
+      std::set<const Item *> openCandidates;
 
       // fill dijkstra information
       FillInternalStructures(weights);
@@ -88,7 +101,7 @@ class Graph
       // source is main candidate item
       auto & candidate = GetDijkstraCandidate(source, weights);
       candidate._weigth = 0.0f;
-
+      
       openCandidates.insert(candidate._graphItem);
 
       while (!openCandidates.empty())
@@ -113,7 +126,7 @@ class Graph
           for (auto iter = weightsToNeighbours.begin(); iter != weightsToNeighbours.end(); ++iter)
           {
             // get actual to neigh weigth
-            float weightFromActualToNeighbour = iter->second;
+            float weightFromActualToNeighbour = validator.CalcDistance(iter->second);
 
             // get distance for neighbour
             auto & neighbourItem = GetDijkstraCandidate(iter->first, weights);
@@ -138,7 +151,6 @@ class Graph
         }
         catch (const DijkstraError &)
         {
-
         }
       }
 
@@ -153,7 +165,7 @@ class Graph
     // main weights matrix: adjacency_list with weights
     WeigthMatrix _weigthMatrix;
 
-    void SetEdge(const T & source, const T & dest, float w)
+    void SetEdge(const Item & source, const Item & dest, const Weight & w)
     {
       auto item = _weigthMatrix.find(source);
 
@@ -176,8 +188,8 @@ class Graph
     {
       float _weigth;
       bool _visited;
-      const T * _graphItem;
-      const T * _previous;
+      const Item * _graphItem;
+      const Item * _previous;
     };
 
     typedef std::vector<DijkstraItem> DijkstraWeights;
@@ -197,7 +209,6 @@ class Graph
         weights.push_back(dItem);
       }
     }
-
 
     DijkstraItem & GetDijkstraCandidate(const DijkstraWeights & weights) const
     {
@@ -219,7 +230,7 @@ class Graph
       return const_cast<DijkstraItem &>(weights[position]);
     }
 
-    DijkstraItem & GetDijkstraCandidate(const T & source, 
+    DijkstraItem & GetDijkstraCandidate(const Item & source, 
                                         const DijkstraWeights & weights) const
     {
       unsigned position = 0;
@@ -242,7 +253,7 @@ class Graph
       ItemNotFound
     };
 
-    Weights & GetNeighbours(const T & item) const
+    Weights & GetNeighbours(const Item & item) const
     {
       auto neighboursIter = _weigthMatrix.find(item);
 
@@ -254,13 +265,13 @@ class Graph
       throw ItemNotFound;
     }
 
-    DijkstraPath GetDijkstraPath(const T & source, 
-                                 const T & dest, 
+    DijkstraPath GetDijkstraPath(const Item & source, 
+                                 const Item & dest, 
                                  const DijkstraWeights & weights)
     {
       DijkstraPath aux;
   
-      T item(dest);
+      Item item(dest);
 
       bool cont = true;
       while (cont)
@@ -273,10 +284,8 @@ class Graph
             {
               if (iter->_previous)
               {
-                DijkstraEdge x;
-
-                x._weigth = GetWeigth(*iter->_previous, *iter->_graphItem);
-                x._item = iter->_graphItem;
+                DijkstraEdge x(*iter->_graphItem,
+                               GetWeigth(*iter->_previous, *iter->_graphItem));
 
                 aux.push_front(x);
 
@@ -298,9 +307,6 @@ class Graph
 
       return aux;
     }
-
-
-
 };
 
 
