@@ -13,4 +13,10 @@ Compilacion y ejecucion linux (requiere compilacion con c++11):
 	Revision 1:
 		a) No admite parametros de ejecucion, se encuentran hardcoded en codigo.
 		b) Localiza la ruta mas corta entre dos localidades.
+		c) Formato de fichero spanishCities.csv:
+			columnas separadas por ; (city;latitude;longitude)
+		d) Formato de fichero spanishRoads.cvs
+			columnas separadas por ; (city; city, velocidad maxima)
+		d) Soporte para visitor en grafo para calculo de distancias
+
 
